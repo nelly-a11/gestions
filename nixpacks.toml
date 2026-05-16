@@ -2,7 +2,7 @@
 php = {}
 
 [phases.setup]
-nixPkgs = ["...", "php84"]
+nixPkgs = ["php84", "nodejs"]
 
 [phases.build]
 cmds = [
