@@ -1,0 +1,5 @@
+{
+  "deploy": {
+    "cmd": "/start-container.sh"
+  }
+}
