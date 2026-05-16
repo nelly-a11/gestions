@@ -1,7 +1,10 @@
 [providers]
 php = {}
 
-[build]
+[phases.setup]
+nixPkgs = ["...", "php84"]
+
+[phases.build]
 cmds = [
     "npm run build",
     "composer install --optimize-autoloader --no-interaction --no-dev",
