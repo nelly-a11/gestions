@@ -16,7 +16,6 @@ use App\Http\Controllers\AuthController;
 
 // --- ROUTES PUBLIQUES ---
 Route::get('/', function () {
-    // On utilise 'welcome' car c'est le nom du fichier resources/views/welcome.blade.php
     return view('welcome'); 
 })->name('welcome');
 
@@ -36,12 +35,22 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Ressources RH
-    Route::resource('employees', EmployeeController::class);
-    Route::resource('departments', DepartmentController::class);
-    Route::resource('positions', PositionController::class);
+    // Ressources RH (Noms sécurisés pour le cache Laravel)
+    Route::resource('employees', EmployeeController::class)->names([
+        'index' => 'employees.index'
+    ]);
+    
+    Route::resource('departments', DepartmentController::class)->names([
+        'index' => 'departments.index'
+    ]);
+    
+    Route::resource('positions', PositionController::class)->names([
+        'index' => 'positions.index'
+    ]);
 
     // Administration
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->names([
+        'index' => 'users.index'
+    ]);
 
 });

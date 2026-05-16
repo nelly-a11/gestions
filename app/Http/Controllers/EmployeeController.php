@@ -18,7 +18,6 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        // CORRECTION : Il faut envoyer les DEUX variables pour le formulaire
         $positions = Position::all();
         $departments = Department::all(); 
         
@@ -30,23 +29,24 @@ class EmployeeController extends Controller
         $request->validate([
             'first_name'    => 'required|string|max:255',
             'last_name'     => 'required|string|max:255',
-            'email'         => 'required|email|unique:employees',
-            'phone'         => 'required',
+            'email'         => 'required|email|unique:employees,email',
+            'phone'         => 'required|string|max:50',
             'department_id' => 'required|exists:departments,id',
             'position_id'   => 'required|exists:positions,id',
             'hired_at'      => 'required|date',
-            'status'        => 'required|in:active,on_leave,inactive'
+            'status'        => 'required|in:active,inactive' // Ajusté selon les options de votre migration d'origine
         ]);
 
         // 1. Création de l'employé
         $employee = Employee::create($request->all());
 
         // 2. Création du premier historique de poste
-        // Vérifie que la relation "histories()" existe dans ton modèle Employee
-        $employee->histories()->create([
-            'position_id' => $request->position_id,
-            'start_date'  => $request->hired_at,
-        ]);
+        if (method_exists($employee, 'histories')) {
+            $employee->histories()->create([
+                'position_id' => $request->position_id,
+                'start_date'  => $request->hired_at,
+            ]);
+        }
 
         return redirect()->route('employees.index')->with('success', 'Employé et historique créés !');
     }
@@ -73,7 +73,7 @@ class EmployeeController extends Controller
             'department_id' => 'required|exists:departments,id',
             'position_id'   => 'required|exists:positions,id',
             'hired_at'      => 'required|date',
-            'status'        => 'required|in:active,on_leave,inactive'
+            'status'        => 'required|in:active,inactive' // Ajusté selon votre migration d'origine
         ]);
 
         // LOGIQUE D'HISTORIQUE : Si le poste change
