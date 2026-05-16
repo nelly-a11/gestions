@@ -20,6 +20,7 @@
 
 <div class="container-fluid">
     <div class="row">
+        <!-- Sidebar -->
         <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3 shadow">
             <h4 class="text-center fw-bold mb-4 mt-2 text-primary"><i class="fas fa-chart-pie me-2"></i>RH Pro</h4>
             <ul class="nav flex-column">
@@ -47,6 +48,7 @@
             </ul>
         </nav>
 
+        <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2 fw-bold">Tableau de Bord</h1>
@@ -55,6 +57,7 @@
                 </div>
             </div>
 
+            <!-- Stats Cards -->
             <div class="row">
                 <div class="col-xl-3 col-sm-6 mb-4">
                     <div class="card stat-card shadow-sm p-3 border-start border-primary border-4">
@@ -83,7 +86,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <p class="text-sm mb-0 text-uppercase font-weight-bold text-muted">Nouveaux</p>
-                                <h4 class="fw-bold mb-0">+{{ $recentEmployees->count() ?? 0 }}</h4>
+                                <h4 class="fw-bold mb-0">+{{ isset($recentEmployees) ? $recentEmployees->count() : 0 }}</h4>
                             </div>
                             <div class="icon-shape bg-info text-white shadow"><i class="fas fa-user-plus"></i></div>
                         </div>
@@ -94,7 +97,13 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <p class="text-sm mb-0 text-uppercase font-weight-bold text-muted">Postes Définis</p>
-                                <h4 class="fw-bold mb-0">{{ \App\Models\Position::count() }}</h4>
+                                <h4 class="fw-bold mb-0">
+                                    @if(class_exists('App\Models\Position'))
+                                        {{ \App\Models\Position::count() }}
+                                    @else
+                                        0
+                                    @endif
+                                </h4>
                             </div>
                             <div class="icon-shape bg-warning text-white shadow"><i class="fas fa-briefcase"></i></div>
                         </div>
@@ -102,6 +111,7 @@
                 </div>
             </div>
 
+            <!-- Recent Hires Table -->
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="card shadow-sm border-0 rounded-4">
