@@ -9,22 +9,26 @@ use Illuminate\Console\Events\CommandStarting;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
     public function register(): void
     {
         //
     }
 
+    /**
+     * Bootstrap any application services.
+     */
     public function boot(): void
     {
-        // Bloque UNIQUEMENT si on tente un fresh/refresh en production via la console
+        // Protection stricte de la base de données en production
         if (App::environment('production')) {
             Event::listen(CommandStarting::class, function (CommandStarting $event) {
+                // On cible uniquement les commandes qui SUPPRIMENT des données
                 if (in_array($event->command, ['migrate:fresh', 'migrate:refresh', 'db:wipe'])) {
-                    // On laisse passer si c'est le build initial de Railway, sinon on bloque
-                    if (env('ALLOW_INITIAL_MIGRATE') !== true) {
-                        $event->output->writeln('<error>ATTENTION : Les commandes destructrices sont interdites !</error>');
-                        exit(1);
-                    }
+                    $event->output->writeln('<error>SÉCURITÉ : Suppression des tables interdite en production !</error>');
+                    exit(1);
                 }
             });
         }
