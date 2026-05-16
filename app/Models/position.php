@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * Class Position
- * * @property int $id
+ * 
+ * @property int $id
  * @property string $title
  * @property int $department_id
  * @property string|null $description

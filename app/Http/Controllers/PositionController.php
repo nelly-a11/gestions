@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Position;
-use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -14,26 +12,31 @@ class PositionController extends Controller
      * Liste des postes avec leurs départements et le nombre d'employés.
      */
     public function index()
-{
-    // 1. On récupère les postes (avec leur département et le nombre d'employés)
-    $positions = Position::with('department')
-        ->withCount('employees')
-        ->latest()
-        ->get();
+    {
+        // On vérifie d'abord si la classe existe pour éviter le crash fatal
+        if (!class_exists('\App\Models\Position')) {
+            abort(500, "Le modèle App\Models\Position est introuvable. Vérifiez la casse du fichier.");
+        }
 
-    // 2. ON RÉCUPÈRE LES DÉPARTEMENTS (C'est la ligne qui manquait !)
-    $departments = \App\Models\Department::all(); 
+        // 1. On récupère les postes (avec leur département et le nombre d'employés)
+        $positions = \App\Models\Position::with('department')
+            ->withCount('employees')
+            ->latest()
+            ->get();
 
-    // 3. On envoie les DEUX variables à la vue
-    return view('positions.index', compact('positions', 'departments'));
-}
+        // 2. On récupère les départements
+        $departments = \App\Models\Department::all(); 
+
+        // 3. On envoie les deux variables à la vue
+        return view('positions.index', compact('positions', 'departments'));
+    }
 
     /**
      * Formulaire de création.
      */
     public function create()
     {
-        $departments = Department::orderBy('name')->get();
+        $departments = \App\Models\Department::orderBy('name')->get();
         return view('positions.create', compact('departments'));
     }
 
@@ -48,7 +51,7 @@ class PositionController extends Controller
             'description'   => 'nullable|string|max:500',
         ]);
 
-        Position::create($validated);
+        \App\Models\Position::create($validated);
 
         return redirect()
             ->route('positions.index')
@@ -58,48 +61,57 @@ class PositionController extends Controller
     /**
      * Détails d'un poste et liste des employés concernés.
      */
-    public function show(Position $position)
-{
-    $employees = $position->employees; // Récupère les employés via la relation
-    return view('positions.show', compact('position', 'employees'));
-}
+    public function show($id)
+    {
+        $position = \App\Models\Position::findOrFail($id);
+        $employees = $position->employees; 
+        
+        return view('positions.show', compact('position', 'employees'));
+    }
 
     /**
      * Formulaire d'édition.
      */
-    public function edit(Position $position)
+    public function edit($id)
     {
-        $departments = Department::orderBy('name')->get();
+        $position = \App\Models\Position::findOrFail($id);
+        $departments = \App\Models\Department::orderBy('name')->get();
+        
         return view('positions.edit', compact('position', 'departments'));
     }
 
     /**
      * Mise à jour du poste.
      */
-    public function update(Request $request, Position $position) {
-    // 1. On valide
-    $validated = $request->validate([
-        'title' => 'required|max:100',
-        'department_id' => 'required|exists:departments,id',
-        'description' => 'nullable|string',
-    ]);
+    public function update(Request $request, $id) 
+    {
+        $position = \App\Models\Position::findOrFail($id);
 
-    // 2. On essaie de mettre à jour
-    $success = $position->update($request->all());
+        // 1. On valide
+        $validated = $request->validate([
+            'title' => 'required|max:100',
+            'department_id' => 'required|exists:departments,id',
+            'description' => 'nullable|string',
+        ]);
 
-    // 3. SI CA NE MARCHE PAS, ON FORCE L'ERREUR
-    if (!$success) {
-        dd("Le modèle refuse de se mettre à jour. Vérifie le fillable dans Position.php");
+        // 2. On essaie de mettre à jour
+        $success = $position->update($validated);
+
+        // 3. Si ça ne marche pas, protection fillable
+        if (!$success) {
+            dd("Le modèle refuse de se mettre à jour. Vérifie le fillable dans Position.php");
+        }
+
+        return redirect()->route('positions.index')->with('success', 'Poste mis à jour !');
     }
-
-    return redirect()->route('positions.index')->with('success', 'Poste mis à jour !');
-}
 
     /**
      * Suppression d'un poste.
      */
-    public function destroy(Position $position)
+    public function destroy($id)
     {
+        $position = \App\Models\Position::findOrFail($id);
+
         // Vérification de sécurité : ne pas supprimer si le poste est occupé
         if ($position->employees()->count() > 0) {
             return redirect()
