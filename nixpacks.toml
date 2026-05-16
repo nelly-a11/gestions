@@ -1,2 +1,13 @@
+[providers]
+php = {}
+
+[build]
+cmds = [
+    "npm run build",
+    "composer install --optimize-autoloader --no-interaction --no-dev",
+    "php artisan config:clear",
+    "php artisan view:clear"
+]
+
 [start]
 cmd = "php -S 0.0.0.0:$PORT -t public"
