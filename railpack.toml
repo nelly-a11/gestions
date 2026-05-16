@@ -1,0 +1,7 @@
+[deploy]
+# Supprime le "migrate:fresh" automatique imposé par Railway
+run_migrations = false
+
+[server]
+# Force l'utilisation d'un serveur Web classique à la place de FrankenPHP
+type = "nginx"
